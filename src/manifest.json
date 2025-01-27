@@ -1,0 +1,21 @@
+{
+    "manifest_version": 2,
+    "name": "endzeit",
+    "version": "1.0",
+    "description": "Shows when a YouTube video will end based on current time and playback speed",
+    "permissions": [
+        "*://*.youtube.com/*",
+        "*://*.netflix.com/*"
+    ],
+    "content_scripts": [
+        {
+            "matches": [
+                "*://*.youtube.com/*",
+                "*://*.netflix.com/*"
+            ],
+            "js": [
+                "content.js"
+            ]
+        }
+    ]
+}
