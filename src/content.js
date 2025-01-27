@@ -1,3 +1,5 @@
+const elementClassName = "end-time"
+
 function formatTime(date) {
     return date.toLocaleTimeString([], {
         hour: '2-digit',
@@ -20,11 +22,11 @@ function addYouTubeEndTimeDisplay() {
     if (!timeDisplay) return;
 
     // Check if we already added the end time span
-    if (timeDisplay.querySelector('.zeitsprung-end-time')) return;
+    if (timeDisplay.querySelector(`.${elementClassName}`)) return;
 
     // Create new span for end time
     const endTimeSpan = document.createElement('span');
-    endTimeSpan.className = 'zeitsprung-end-time';
+    endTimeSpan.className = elementClassName;
     endTimeSpan.style.marginLeft = '10px';
     timeDisplay.appendChild(endTimeSpan);
 
@@ -55,20 +57,30 @@ function addNetflixEndTimeDisplay() {
 
     const rect = timeDisplay.getBoundingClientRect();
 
-    if (document.body.querySelector('.zeitsprung-end-time')) return;
+    if (document.body.querySelector(`.${elementClassName}`)) return;
 
     // Create new span for end time
     const endTimeSpan = document.createElement('span');
-    endTimeSpan.className = 'zeitsprung-end-time';
-    endTimeSpan.style.marginLeft = '10px';
-    endTimeSpan.style.position = 'absolute';
-    endTimeSpan.style.color = '#fff';  // Netflix uses white text
+    endTimeSpan.className = elementClassName;
+    endTimeSpan.style.position = 'fixed';
+    endTimeSpan.style.color = '#fff';
     endTimeSpan.style.fontSize = "1.6rem";
     endTimeSpan.style.textAlign = "right";
     endTimeSpan.style.width = "200px";
-    endTimeSpan.style.left = `${rect.left - 150}px`;
-    endTimeSpan.style.top = `${rect.top - 20}px`; // 20 pixels above
+    endTimeSpan.style.zIndex = "9999"; // Ensure it's above other Netflix elements
     document.body.appendChild(endTimeSpan);
+
+    // Function to update position
+    function updatePosition() {
+        const timeDisplay = document.querySelector('[data-uia="controls-time-remaining"]');
+        if (timeDisplay) {
+            const rect = timeDisplay.getBoundingClientRect();
+            // Calculate right position from right edge of viewport
+            const rightPosition = window.innerWidth - (rect.left + rect.width);
+            endTimeSpan.style.right = `${rightPosition}px`;
+            endTimeSpan.style.top = `${rect.top - 30}px`; // Slightly above the time display
+        }
+    }
 
     // Update end time whenever time or playback rate changes
     function updateEndTime() {
@@ -79,6 +91,7 @@ function addNetflixEndTimeDisplay() {
         if (duration && !isNaN(duration)) {
             const endTime = calculateEndTime(duration, currentTime, playbackRate);
             endTimeSpan.textContent = `Ends at ${endTime}`;
+            updatePosition();
         }
     }
 
