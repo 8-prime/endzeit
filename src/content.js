@@ -49,7 +49,6 @@ function addYouTubeEndTimeDisplay() {
 function addNetflixEndTimeDisplay() {
     const video = document.querySelector('video');
     if (!video) return;
-    console.log("got video");
 
     const timeDisplay = document.querySelector('[data-uia="controls-time-remaining"]');
     if (!timeDisplay) return;
@@ -58,7 +57,6 @@ function addNetflixEndTimeDisplay() {
 
     if (document.body.querySelector('.zeitsprung-end-time')) return;
 
-    console.log("adding new child element");
     // Create new span for end time
     const endTimeSpan = document.createElement('span');
     endTimeSpan.className = 'zeitsprung-end-time';
@@ -114,8 +112,6 @@ function observeNetflixPlayerView() {
         for (const mutation of mutationsList) {
             if (mutation.type === 'childList' || mutation.type === 'attributes') {
                 if (document.querySelector(".inactive") || document.querySelector(".passive")) {
-                    console.log("removing time display");
-
                     removeNetflixTimeDisplay();
                     return;
                 }
@@ -134,8 +130,6 @@ function observeNetflixPlayerView() {
 
 // Initial setup
 function init() {
-    console.log("handling init");
-
     // Determine which platform we're on and call appropriate function
     const isYouTube = window.location.hostname.includes('youtube');
     const isNetflix = window.location.hostname.includes('netflix');
@@ -144,11 +138,8 @@ function init() {
     const observer = new MutationObserver((mutations, obs) => {
         if (document.querySelector('video')) {
             if (isYouTube) {
-                console.log("handling yt");
-
                 addYouTubeEndTimeDisplay();
             } else if (isNetflix) {
-                console.log("handling netflix");
                 addNetflixEndTimeDisplay();
                 observeNetflixPlayerView();
             }
@@ -168,9 +159,12 @@ if (window.location.hostname.includes('youtube')) {
     window.addEventListener('yt-navigate-finish', init);
 } else if (window.location.hostname.includes('netflix')) {
     // Netflix uses pushState for navigation
-    const pushState = history.pushState;
-    history.pushState = function () {
-        pushState.apply(history, arguments);
-        init();
-    };
+    let lastUrl = window.location.href;
+    new MutationObserver(() => {
+        const url = window.location.href;
+        if (url !== lastUrl) {
+            lastUrl = url;
+            init();
+        }
+    }).observe(document, { subtree: true, childList: true });
 }
